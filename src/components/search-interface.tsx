@@ -163,7 +163,7 @@ const mockResults: SearchResult[] = [
     {
         id: "5",
         type: "video",
-        title: "video.mp4",
+        title: "rudraksh_video.mp4",
         location: "Videos",
         editTime: "1y ago",
     },
@@ -179,7 +179,7 @@ const mockResults: SearchResult[] = [
     {
         id: "7",
         type: "chat",
-        title: "Confidential Chat",
+        title: "Rudraksh Jhaveri Chat",
         subtitle: "Last message 2h ago",
     },
     {
@@ -209,9 +209,15 @@ export function SearchInterface() {
         })
 
         if (activeTab === "files") {
-            filtered = filtered.filter((result) => result.type === "file")
+            filtered = filtered.filter(
+                (result) => result.type === "file" || result.type === "video" || result.type === "folder",
+            )
         } else if (activeTab === "people") {
             filtered = filtered.filter((result) => result.type === "person")
+        } else if (activeTab === "chat") {
+            filtered = filtered.filter((result) => result.type === "chat")
+        } else if (activeTab === "list") {
+            filtered = filtered.filter((result) => result.type === "list")
         } else {
             filtered = filtered.filter((result) => {
                 const matchesFilter =
@@ -229,13 +235,19 @@ export function SearchInterface() {
     const allSearchResults = mockResults.filter((result) =>
         result.title.toLowerCase().includes(searchQuery.toLowerCase()),
     )
-    const fileCount = allSearchResults.filter((r) => r.type === "file").length
+    const fileCount = allSearchResults.filter(
+        (r) => r.type === "file" || r.type === "video" || r.type === "folder",
+    ).length
     const peopleCount = allSearchResults.filter((r) => r.type === "person").length
+    const chatCount = allSearchResults.filter((r) => r.type === "chat").length
+    const listCount = allSearchResults.filter((r) => r.type === "list").length
 
     const tabs = [
         { id: "all", label: "All", count: allSearchResults.length },
         { id: "files", label: "Files", count: fileCount },
         { id: "people", label: "People", count: peopleCount },
+        ...(contentFilters.chats ? [{ id: "chat", label: "Chat", count: chatCount }] : []),
+        ...(contentFilters.lists ? [{ id: "list", label: "List", count: listCount }] : []),
     ]
 
     useEffect(() => {
@@ -252,7 +264,6 @@ export function SearchInterface() {
     useEffect(() => {
         if (searchQuery) {
             setIsSearching(true)
-            // Simulate search delay
             const timer = setTimeout(() => {
                 const filtered = getFilteredResults()
                 setResults(filtered)
@@ -285,7 +296,7 @@ export function SearchInterface() {
             case "video":
                 return <Play className="h-5 w-5 text-muted-foreground" />
             default:
-                return <User className="h-5 w-5 text-muted-foreground" />
+                return <User className="h-100 w-5 text-muted-foreground" />
         }
     }
 
@@ -448,6 +459,20 @@ export function SearchInterface() {
                                                 </Avatar>
                                                 {getStatusDot(result.status)}
                                             </div>
+                                        ) : result.type === "chat" ? (
+                                            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-green-500/10 flex items-center justify-center">
+                                                <div className="h-4 w-4 sm:h-5 sm:w-5 rounded-full bg-green-500/20 flex items-center justify-center">
+                                                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                                                </div>
+                                            </div>
+                                        ) : result.type === "list" ? (
+                                            <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                                <div className="h-4 w-4 sm:h-5 sm:w-5 flex flex-col space-y-0.5">
+                                                    <div className="h-0.5 bg-blue-500 rounded" />
+                                                    <div className="h-0.5 bg-blue-500 rounded" />
+                                                    <div className="h-0.5 bg-blue-500 rounded" />
+                                                </div>
+                                            </div>
                                         ) : (
                                             <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-lg bg-muted flex items-center justify-center">
                                                 {getIcon(result.type)}
@@ -458,6 +483,8 @@ export function SearchInterface() {
                                             <div className="font-medium text-foreground truncate text-sm sm:text-base">{result.title}</div>
                                             <div className="text-xs sm:text-sm text-muted-foreground">
                                                 {result.type === "person" ? (
+                                                    result.subtitle
+                                                ) : result.type === "chat" || result.type === "list" ? (
                                                     result.subtitle
                                                 ) : (
                                                     <span>
